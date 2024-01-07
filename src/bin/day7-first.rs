@@ -31,7 +31,7 @@ enum HandType {
     Three,
     Full,
     Four,
-    Five
+    Five,
 }
 
 #[derive(Debug, Eq, PartialEq, PartialOrd)]
@@ -49,7 +49,11 @@ fn main() {
     // the implemented cmp from Ord instead.
     // I wonder what the idiomatic way of doing this is because it just looks odd.
     hands.sort_by(|h, h_| h.cmp(h_));
-    let answer: Bid = hands.iter().enumerate().map(|(idx, (_, bid))| ((idx + 1) as Bid) * bid).sum();
+    let answer: Bid = hands
+        .iter()
+        .enumerate()
+        .map(|(idx, (_, bid))| ((idx + 1) as Bid) * bid)
+        .sum();
     println!("{}", answer);
 }
 

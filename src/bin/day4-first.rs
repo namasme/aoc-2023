@@ -1,6 +1,6 @@
+use aoc_2023::day4;
 use std::fs;
 use std::str;
-use aoc_2023::day4;
 
 fn main() {
     let input = fs::read_to_string("data/day4/input").unwrap();

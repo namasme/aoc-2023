@@ -13,7 +13,12 @@ fn main() {
     println!("{}", answer);
 }
 
-fn distance(from: String, to: String, directions: Vec<day8::Direction>, network: day8::Network) -> u32 {
+fn distance(
+    from: String,
+    to: String,
+    directions: Vec<day8::Direction>,
+    network: day8::Network,
+) -> u32 {
     let mut cycled = directions.iter().cycle();
     let mut current = from;
     let mut steps = 0;

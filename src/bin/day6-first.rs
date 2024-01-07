@@ -2,7 +2,6 @@ use aoc_2023::day6;
 use std::fs;
 use std::iter::zip;
 
-
 fn main() {
     let input = fs::read_to_string("data/day6/input").unwrap();
     let (times, distances) = parse_input(&input);

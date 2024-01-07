@@ -14,10 +14,18 @@ pub fn beat_record(total_time: Time, target_distance: Distance) -> u64 {
         Some((a, b)) => {
             // The inequality is strict so the edges are exclusive.
             // If they are already integers we need to pad them.
-            let left: i64 = if is_integer(a) { a as i64 + 1 } else { a.ceil() as i64 };
-            let right: i64 = if is_integer(b) { b as i64 - 1 } else { b.floor() as i64 };
+            let left: i64 = if is_integer(a) {
+                a as i64 + 1
+            } else {
+                a.ceil() as i64
+            };
+            let right: i64 = if is_integer(b) {
+                b as i64 - 1
+            } else {
+                b.floor() as i64
+            };
             (right - left) as u64 + 1
-        },
+        }
         None => 0,
     }
 }

@@ -1,7 +1,6 @@
 use aoc_2023::day6;
 use std::fs;
 
-
 fn main() {
     let input = fs::read_to_string("data/day6/input").unwrap();
     let (time, distance) = parse_input(&input);

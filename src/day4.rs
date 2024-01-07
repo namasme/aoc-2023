@@ -9,8 +9,7 @@ pub struct Scratchcard {
 
 impl Scratchcard {
     pub fn count_matches(&self) -> usize {
-        self
-            .winning
+        self.winning
             .intersection(&self.present)
             .collect::<Vec<_>>()
             .len()

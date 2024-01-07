@@ -1,6 +1,6 @@
+use aoc_2023::day4;
 use std::fs;
 use std::str;
-use aoc_2023::day4;
 
 fn main() {
     let input = fs::read_to_string("data/day4/input").unwrap();
@@ -17,7 +17,9 @@ fn count_copies(cards: &Vec<day4::Scratchcard>) -> u64 {
         let matches_count = cards[idx].count_matches();
 
         for delta_idx in 0..matches_count {
-            counts.get_mut(idx + delta_idx + 1).map(|count| *count += current_count);
+            counts
+                .get_mut(idx + delta_idx + 1)
+                .map(|count| *count += current_count);
         }
     }
 
