@@ -1,4 +1,5 @@
 use aoc_2023::day10;
+use aoc_2023::spatial;
 use std::collections::HashMap;
 use std::fs;
 
@@ -10,8 +11,8 @@ struct Range {
 
 #[derive(Debug)]
 struct ClosedLoop {
-    path: Vec<day10::Point2D>,
-    pipes: HashMap<day10::Point2D, day10::Pipe>,
+    path: Vec<spatial::UPoint2D>,
+    pipes: HashMap<spatial::UPoint2D, day10::Pipe>,
 }
 
 fn main() {
@@ -23,7 +24,7 @@ fn main() {
 }
 
 impl ClosedLoop {
-    fn trace_for(field: &day10::Field, start: day10::Point2D) -> Self {
+    fn trace_for(field: &day10::Field, start: spatial::UPoint2D) -> Self {
         let path = field.trace_loop(start, field.identify_start_pipe(start).0);
         let pipes = path
             .iter()
@@ -54,7 +55,7 @@ impl ClosedLoop {
         let mut idx = 0;
 
         while idx < path.len() {
-            let day10::Point2D { row, column } = path[idx];
+            let spatial::UPoint2D { row, column } = path[idx];
             let start_idx = idx;
             while idx < path.len()
                 && path[idx].row == row
@@ -77,7 +78,7 @@ impl ClosedLoop {
     }
 
     fn row_area(&self, row: usize, ranges: &[Range]) -> usize {
-        let pipe_at = |column| self.pipes[&day10::Point2D { row, column }];
+        let pipe_at = |column| self.pipes[&spatial::UPoint2D { row, column }];
         let mut inside = false;
         let mut accumulated_miles: usize = 0;
 
@@ -128,8 +129,8 @@ impl ClosedLoop {
         // OO | II | OO
         // OO F----7 OO
         // OOOOOOOOOOOO
-        let left_end = self.pipes[&day10::Point2D { row, column: range.start }];
-        let right_end = self.pipes[&day10::Point2D { row, column: range.end() - 1 }];
+        let left_end = self.pipes[&spatial::UPoint2D { row, column: range.start }];
+        let right_end = self.pipes[&spatial::UPoint2D { row, column: range.end() - 1 }];
         current_inside == (
             came_from(left_end) == came_from(right_end)
         )
@@ -142,10 +143,10 @@ impl Range {
     }
 }
 
-fn came_from(pipe: day10::Pipe) -> day10::Direction {
+fn came_from(pipe: day10::Pipe) -> spatial::Direction {
     pipe.0
 }
 
 fn continues_rightward(pipe: day10::Pipe) -> bool {
-    pipe.1 == day10::Direction::Right
+    pipe.1 == spatial::Direction::Right
 }

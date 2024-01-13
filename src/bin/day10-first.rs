@@ -1,5 +1,6 @@
 use std::fs;
 use aoc_2023::day10;
+use aoc_2023::spatial::UPoint2D;
 
 fn main() {
     let input = fs::read_to_string("data/day10/input").unwrap();
@@ -8,7 +9,7 @@ fn main() {
     println!("{answer}");
 }
 
-fn find_length(field: &day10::Field, start: day10::Point2D) -> u64 {
+fn find_length(field: &day10::Field, start: UPoint2D) -> u64 {
     let (direction, _) = field.identify_start_pipe(start);
     let steps = field.trace_loop(start, direction);
 

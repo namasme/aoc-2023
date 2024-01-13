@@ -1,22 +1,15 @@
+use crate::spatial;
 use anyhow::anyhow;
 use anyhow::Result;
 use std::cmp;
 use std::collections::HashMap;
-use std::ops::Neg;
-use std::ops::Sub;
 
 #[derive(Debug)]
 pub struct Field {
-    pub pipes: HashMap<Point2D, Pipe>,
+    pub pipes: HashMap<spatial::UPoint2D, Pipe>,
 }
 
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct Point2D {
-    pub row: usize,
-    pub column: usize,
-}
-
-pub type Pipe = (Direction, Direction);
+pub type Pipe = (spatial::Direction, spatial::Direction);
 
 #[derive(Debug, Eq, PartialEq)]
 enum RawPipe {
@@ -28,31 +21,12 @@ enum RawPipe {
     RightBottom,
 }
 
-#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
-pub enum Direction {
-    Up,
-    Down,
-    Left,
-    Right,
-}
-
-impl Sub for Point2D {
-    type Output = Self;
-
-    fn sub(self, other: Self) -> Self::Output {
-        Self {
-            row: self.row - other.row,
-            column: self.column - other.column,
-        }
-    }
-}
-
 impl Field {
     pub fn trace_loop(
         &self,
-        start: Point2D,
-        direction: Direction,
-    ) -> Vec<Point2D> {
+        start: spatial::UPoint2D,
+        direction: spatial::Direction,
+    ) -> Vec<spatial::UPoint2D> {
         let mut current = start.move_by(direction).unwrap();
         let mut came_from = -direction;
         let mut loop_points = vec![];
@@ -73,7 +47,7 @@ impl Field {
         loop_points
     }
 
-    pub fn identify_start_pipe(&self, start: Point2D) -> Pipe {
+    pub fn identify_start_pipe(&self, start: spatial::UPoint2D) -> Pipe {
         let connected: Vec<_> = start
             .neighbours()
             .iter()
@@ -97,61 +71,6 @@ impl Field {
     }
 }
 
-impl Point2D {
-    pub fn neighbours(&self) -> Vec<Point2D> {
-        vec![
-            Direction::Up,
-            Direction::Down,
-            Direction::Left,
-            Direction::Right,
-        ]
-        .into_iter()
-        .filter_map(|direction| self.move_by(direction))
-        .collect()
-    }
-
-    pub fn move_by(&self, direction: Direction) -> Option<Point2D> {
-        let destination = match direction {
-            Direction::Up => Point2D {
-                row: self.row - 1,
-                column: self.column,
-            },
-            Direction::Down => Point2D {
-                row: self.row + 1,
-                column: self.column,
-            },
-            Direction::Left => Point2D {
-                row: self.row,
-                column: self.column - 1,
-            },
-            Direction::Right => Point2D {
-                row: self.row,
-                column: self.column + 1,
-            },
-        };
-
-        Some(destination).filter(Self::is_valid)
-    }
-
-    // We pad all coordinates by 1 not to deal with overflows in unsigned integers.
-    fn is_valid(&self) -> bool {
-        self.row > 0 && self.column > 0
-    }
-}
-
-impl Neg for Direction {
-    type Output = Self;
-
-    fn neg(self) -> Self {
-        match self {
-            Direction::Up => Direction::Down,
-            Direction::Down => Direction::Up,
-            Direction::Left => Direction::Right,
-            Direction::Right => Direction::Left,
-        }
-    }
-}
-
 impl RawPipe {
     fn parse(input: char) -> Result<RawPipe> {
         match input {
@@ -165,19 +84,19 @@ impl RawPipe {
         }
     }
 
-    fn directions(&self) -> (Direction, Direction) {
+    fn directions(&self) -> (spatial::Direction, spatial::Direction) {
         match self {
-            RawPipe::Horizontal => (Direction::Left, Direction::Right),
-            RawPipe::Vertical => (Direction::Up, Direction::Down),
-            RawPipe::LeftTop => (Direction::Up, Direction::Left),
-            RawPipe::RightTop => (Direction::Up, Direction::Right),
-            RawPipe::LeftBottom => (Direction::Down, Direction::Left),
-            RawPipe::RightBottom => (Direction::Down, Direction::Right),
+            RawPipe::Horizontal => (spatial::Direction::Left, spatial::Direction::Right),
+            RawPipe::Vertical => (spatial::Direction::Up, spatial::Direction::Down),
+            RawPipe::LeftTop => (spatial::Direction::Up, spatial::Direction::Left),
+            RawPipe::RightTop => (spatial::Direction::Up, spatial::Direction::Right),
+            RawPipe::LeftBottom => (spatial::Direction::Down, spatial::Direction::Left),
+            RawPipe::RightBottom => (spatial::Direction::Down, spatial::Direction::Right),
         }
     }
 }
 
-pub fn parse_input(input: &str) -> (Field, Point2D) {
+pub fn parse_input(input: &str) -> (Field, spatial::UPoint2D) {
     let mut pipes = vec![];
     let mut start = None;
 
@@ -193,23 +112,19 @@ pub fn parse_input(input: &str) -> (Field, Point2D) {
     )
 }
 
-fn parse_line((row, line): (usize, &str)) -> (Vec<(Point2D, Pipe)>, Option<Point2D>) {
+fn parse_line(
+    (row, line): (usize, &str),
+) -> (Vec<(spatial::UPoint2D, Pipe)>, Option<spatial::UPoint2D>) {
     let mut pipes = vec![];
     let mut start = None;
     for (column, ch) in line.chars().enumerate() {
         if ch == 'S' {
-            start = Some(Point2D {
-                row: row + 1,
-                column: column + 1,
-            });
+            start = Some(spatial::UPoint2D::from(row, column));
         } else if ch == '.' {
             continue;
         } else {
             pipes.push((
-                Point2D {
-                    row: row + 1,
-                    column: column + 1,
-                },
+                spatial::UPoint2D::from(row, column),
                 RawPipe::parse(ch).unwrap().directions(),
             ));
         }
