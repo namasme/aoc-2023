@@ -88,11 +88,7 @@ impl ClosedLoop {
             }
             if ranges[idx].size > 1 {
                 if continues_rightward(pipe_at(ranges[idx].start)) {
-                    inside = self.update_inside(
-                        inside,
-                        row,
-                        &ranges[idx],
-                    );
+                    inside = self.update_inside(inside, row, &ranges[idx]);
                 }
             } else {
                 inside = !inside;
@@ -129,11 +125,15 @@ impl ClosedLoop {
         // OO | II | OO
         // OO F----7 OO
         // OOOOOOOOOOOO
-        let left_end = self.pipes[&spatial::UPoint2D { row, column: range.start }];
-        let right_end = self.pipes[&spatial::UPoint2D { row, column: range.end() - 1 }];
-        current_inside == (
-            came_from(left_end) == came_from(right_end)
-        )
+        let left_end = self.pipes[&spatial::UPoint2D {
+            row,
+            column: range.start,
+        }];
+        let right_end = self.pipes[&spatial::UPoint2D {
+            row,
+            column: range.end() - 1,
+        }];
+        current_inside == (came_from(left_end) == came_from(right_end))
     }
 }
 

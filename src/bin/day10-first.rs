@@ -1,6 +1,6 @@
-use std::fs;
 use aoc_2023::day10;
 use aoc_2023::spatial::UPoint2D;
+use std::fs;
 
 fn main() {
     let input = fs::read_to_string("data/day10/input").unwrap();

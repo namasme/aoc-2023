@@ -18,7 +18,10 @@ pub enum Direction {
 impl UPoint2D {
     pub fn from(row: usize, column: usize) -> Self {
         // We pad all coordinates by 1 not to deal with overflows in unsigned integers.
-        Self { row: row + 1, column: column + 1 }
+        Self {
+            row: row + 1,
+            column: column + 1,
+        }
     }
     pub fn neighbours(&self) -> Vec<UPoint2D> {
         vec![
