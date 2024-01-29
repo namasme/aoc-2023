@@ -18,14 +18,14 @@ fn main() {
     //
     // The whole set of equations then degenerates into finding the lcm for all the cycle lengths.
 
-    let cycle_lengths: Vec<u64> = network
+    let cycle_lengths: Vec<_> = network
         .edges
         .keys()
         .filter(|node_id| is_initial(node_id))
         .map(|node_id| network.detect_cycle(node_id, &directions).lambda)
         .collect();
     let answer = cycle_lengths.into_iter().reduce(lcm).unwrap();
-    println!("{}", answer);
+    println!("{answer}");
 }
 
 fn is_initial(node_id: &day8::NodeID) -> bool {
@@ -40,11 +40,16 @@ fn is_initial(node_id: &day8::NodeID) -> bool {
 //     seed: &day8::NodeID,
 //     directions: &[day8::Direction],
 // ) -> usize {
-//     let mu = network.detect_cycle(seed, directions).mu as usize;
-//     mu + network
-//         .iterate(seed, directions)
+//     let step = day8::Step {
+//         node_id: seed,
+//         network,
+//         direction_stream: day8::DirectionStream::from_directions(directions),
+//     };
+//     let mu = network.detect_cycle(seed, directions).mu;
+//     mu + step
+//         .into_iter()
 //         .skip(mu)
-//         .take_while(|node_id| !is_terminal(node_id))
+//         .take_while(|current| !is_terminal(current.node_id))
 //         .count()
 // }
 

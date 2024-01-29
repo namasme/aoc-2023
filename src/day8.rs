@@ -1,9 +1,10 @@
+use crate::common::Cycle;
+use crate::common::CycleDetection; // importing to have access to the Iterator instance
 use anyhow::anyhow;
 use anyhow::Result;
 use std::collections::HashMap;
-use unfold::Unfold;
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Direction {
     Left,
     Right,
@@ -11,21 +12,15 @@ pub enum Direction {
 
 pub type NodeID = String;
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct Network {
     pub edges: HashMap<NodeID, (NodeID, NodeID)>,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct DirectionStream<'a> {
     base_directions: &'a [Direction],
     pub index: usize,
-}
-
-#[derive(Debug)]
-pub struct Cycle {
-    pub mu: u64,     // the length of the prefix
-    pub lambda: u64, // the actual cycle length
 }
 
 impl Direction {
@@ -42,7 +37,7 @@ impl Direction {
 }
 
 impl<'a> DirectionStream<'a> {
-    fn from_directions(base_directions: &'a [Direction]) -> DirectionStream<'a> {
+    pub fn from_directions(base_directions: &'a [Direction]) -> DirectionStream<'a> {
         Self {
             base_directions,
             index: 0,
@@ -58,75 +53,46 @@ impl<'a> DirectionStream<'a> {
 
 impl Network {
     pub fn detect_cycle(&self, seed: &NodeID, directions: &[Direction]) -> Cycle {
-        let mut tortoise_directions = DirectionStream::from_directions(directions);
-        let mut hare_directions = DirectionStream::from_directions(directions);
-        let mut tortoise = self.follow(seed, &mut tortoise_directions);
-        let mut hare = self.follow(seed, &mut hare_directions);
-        hare = self.follow(hare, &mut hare_directions);
+        let step = Step {
+            node_id: seed,
+            network: self,
+            direction_stream: DirectionStream::from_directions(directions),
+        };
 
-        while (tortoise, tortoise_directions.index) != (hare, hare_directions.index) {
-            tortoise = self.follow(tortoise, &mut tortoise_directions);
-            hare = self.follow(hare, &mut hare_directions);
-            hare = self.follow(hare, &mut hare_directions);
-        }
-
-        let mut mu = 0;
-        tortoise_directions.index = 0; // reset stream
-        tortoise = seed;
-        while (tortoise, tortoise_directions.index) != (hare, hare_directions.index) {
-            tortoise = self.follow(tortoise, &mut tortoise_directions);
-            hare = self.follow(hare, &mut hare_directions);
-            mu += 1;
-        }
-
-        let mut lambda = 1;
-        hare_directions.index = tortoise_directions.index;
-        hare = self.follow(tortoise, &mut hare_directions);
-        while (tortoise, tortoise_directions.index) != (hare, hare_directions.index) {
-            hare = self.follow(hare, &mut hare_directions);
-            lambda += 1;
-        }
-
-        Cycle { mu, lambda }
+        step.detect_cycle()
     }
+}
 
-    pub fn iterate<'a>(
-        &'a self,
-        seed: &'a NodeID,
-        directions: &'a [Direction],
-    ) -> impl Iterator<Item = &'a NodeID> + '_ {
-        Unfold::new(
-            |(current, directions)| {
-                let mut cloned = directions.clone();
-                let next = self.follow(current, &mut cloned);
-                (next, cloned)
-            },
-            (seed, DirectionStream::from_directions(directions)),
-        )
-        .map(|(node_id, _)| node_id)
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct Step<'a> {
+    pub node_id: &'a NodeID,
+    pub network: &'a Network,
+    pub direction_stream: DirectionStream<'a>,
+}
+
+pub struct StepIter<'a> {
+    step: Step<'a>,
+}
+
+impl<'a> IntoIterator for Step<'a> {
+    type Item = Step<'a>;
+    type IntoIter = StepIter<'a>;
+    fn into_iter(self) -> Self::IntoIter {
+        StepIter { step: self.clone() }
     }
+}
 
-    pub fn iterate_n<'a>(
-        &'a self,
-        seed: &'a NodeID,
-        n: usize,
-        directions: &'a [Direction],
-    ) -> &'a NodeID {
-        self.iterate(seed, directions).skip(n).next().unwrap()
-    }
+impl<'a> Iterator for StepIter<'a> {
+    type Item = Step<'a>;
+    fn next(&mut self) -> Option<Step<'a>> {
+        let (left, right) = &self.step.network.edges[self.step.node_id];
+        let direction = self.step.direction_stream.next();
 
-    pub fn follow<'a>(
-        &'a self,
-        current: &'a NodeID,
-        directions: &mut DirectionStream,
-    ) -> &'a NodeID {
-        let (left, right) = &self.edges[current];
-        let direction = directions.next();
-
-        match direction {
+        self.step.node_id = match direction {
             Direction::Left => &left,
             Direction::Right => &right,
-        }
+        };
+        Some(self.step.clone())
     }
 }
 
