@@ -1,3 +1,20 @@
+pub struct FiniteCycleIter<T> {
+    pub values: Vec<T>,
+    pub index: usize,
+}
+
+impl<T> Iterator for FiniteCycleIter<T>
+where
+    T: Copy,
+{
+    type Item = T;
+    fn next(&mut self) -> Option<Self::Item> {
+        let current = self.values[self.index];
+        self.index = (self.index + 1) % self.values.len();
+        Some(current)
+    }
+}
+
 #[derive(Debug)]
 pub struct Cycle {
     pub mu: usize,     // the length of the prefix
