@@ -7,7 +7,7 @@ pub struct UPoint2D {
     pub column: usize,
 }
 
-#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum Direction {
     Up,
     Down,
@@ -58,7 +58,11 @@ impl UPoint2D {
         Some(destination).filter(Self::is_valid)
     }
 
-    fn is_valid(&self) -> bool {
+    pub fn within_bounds(&self, width: usize, height: usize) -> bool {
+        self.is_valid() && self.column <= width && self.row <= height
+    }
+
+    pub fn is_valid(&self) -> bool {
         self.row > 0 && self.column > 0
     }
 }
