@@ -1,3 +1,25 @@
+use crate::spatial::UPoint2D;
+
+#[derive(Debug)]
+pub struct Matrix<T> {
+    pub data: Vec<T>,
+    pub width: usize,
+}
+
+impl<T> Matrix<T> {
+    pub fn at(&self, at: UPoint2D) -> &'_ T {
+        let idx = (at.row - 1) * self.width + (at.column - 1);
+        &self.data[idx]
+    }
+
+    pub fn get_width(&self) -> usize {
+        self.width
+    }
+    pub fn get_height(&self) -> usize {
+        self.data.len() / self.width
+    }
+}
+
 pub struct FiniteCycleIter<T> {
     pub values: Vec<T>,
     pub index: usize,

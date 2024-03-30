@@ -15,6 +15,11 @@ pub enum Direction {
     Right,
 }
 
+pub enum Orientation {
+    Clockwise,
+    Counterclockwise,
+}
+
 impl UPoint2D {
     pub fn from(row: usize, column: usize) -> Self {
         // We pad all coordinates by 1 not to deal with overflows in unsigned integers.
@@ -64,6 +69,25 @@ impl UPoint2D {
 
     pub fn is_valid(&self) -> bool {
         self.row > 0 && self.column > 0
+    }
+}
+
+impl Direction {
+    pub fn rotate(self, orientation: Orientation) -> Self {
+        match orientation {
+            Orientation::Clockwise => match self {
+                Direction::Up => Direction::Right,
+                Direction::Right => Direction::Down,
+                Direction::Down => Direction::Left,
+                Direction::Left => Direction::Up,
+            },
+            Orientation::Counterclockwise => match self {
+                Direction::Up => Direction::Left,
+                Direction::Left => Direction::Down,
+                Direction::Down => Direction::Right,
+                Direction::Right => Direction::Up,
+            },
+        }
     }
 }
 
